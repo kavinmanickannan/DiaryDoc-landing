@@ -1,0 +1,4 @@
+import type { Metadata } from "next";
+import "./globals.css";
+export const metadata: Metadata = {title:"DiaryDoc — Your dental clinic, connected. Chairside to billing.",description:"Dental EMR for Indian clinics. Explore interactive FDI tooth charting, patient records, treatment plans and billing. Apply for the DiaryDoc pilot program.",icons:{icon:"/logo.png"},openGraph:{title:"DiaryDoc — Chairside to billing",description:"Dental workflows, built in. Explore DiaryDoc and apply for the pilot program.",type:"website"},twitter:{card:"summary",title:"DiaryDoc — Chairside to billing",description:"Dental workflows, built in. Explore DiaryDoc and apply for the pilot program."}};
+export default function RootLayout({children}:Readonly<{children:React.ReactNode}>){return <html lang="en-IN"><body>{children}</body></html>}
