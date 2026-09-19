@@ -1,7 +1,11 @@
 import {z} from "zod";
 import { neon } from "@neondatabase/serverless";
 
-const application=z.object({clinic:z.string().trim().min(2).max(120),name:z.string().trim().min(2).max(100),email:z.string().trim().email().max(254),details:z.string().trim().max(1000).default(""),consent:z.literal(true),website:z.string().max(500).optional()});
+// Indian mobiles are 10 digits starting 6-9; an 0 or +91 prefix is common.
+// Formatting the applicant typed is stripped before the rule is applied, so
+// what gets stored is always a bare, dialable number.
+const phone=z.string().trim().max(20).transform(v=>v.replace(/[\s()\-.]/g,"")).refine(v=>/^(\+?91|0)?[6-9]\d{9}$/.test(v));
+const application=z.object({clinic:z.string().trim().min(2).max(120),name:z.string().trim().min(2).max(100),phone,email:z.string().trim().email().max(254),details:z.string().trim().max(1000).default(""),consent:z.literal(true),website:z.string().max(500).optional()});
 type Application=z.infer<typeof application>;
 
 const NOTIFY_TO=process.env.PILOT_NOTIFY_EMAIL||"diarydocsupport@gmail.com";
@@ -12,8 +16,11 @@ export const runtime = "nodejs";
 
 async function save(id:string,p:Application,databaseUrl:string){
   const sql=neon(databaseUrl);
-  await sql`CREATE TABLE IF NOT EXISTS pilot_applications (id text PRIMARY KEY, clinic text NOT NULL, name text NOT NULL, email text NOT NULL, details text NOT NULL DEFAULT '', consent boolean NOT NULL, notice_version text NOT NULL, created_at timestamptz NOT NULL)`;
-  await sql`INSERT INTO pilot_applications (id, clinic, name, email, details, consent, notice_version, created_at) VALUES (${id}, ${p.clinic}, ${p.name}, ${p.email.toLowerCase()}, ${p.details}, ${true}, ${"2026-09-10"}, NOW())`;
+  await sql`CREATE TABLE IF NOT EXISTS pilot_applications (id text PRIMARY KEY, clinic text NOT NULL, name text NOT NULL, phone text NOT NULL DEFAULT '', email text NOT NULL, details text NOT NULL DEFAULT '', consent boolean NOT NULL, notice_version text NOT NULL, created_at timestamptz NOT NULL)`;
+  // CREATE TABLE IF NOT EXISTS is a no-op once the table exists, so a
+  // deployment that already has rows needs the column added explicitly.
+  await sql`ALTER TABLE pilot_applications ADD COLUMN IF NOT EXISTS phone text NOT NULL DEFAULT ''`;
+  await sql`INSERT INTO pilot_applications (id, clinic, name, phone, email, details, consent, notice_version, created_at) VALUES (${id}, ${p.clinic}, ${p.name}, ${p.phone}, ${p.email.toLowerCase()}, ${p.details}, ${true}, ${"2026-09-19"}, NOW())`;
 }
 
 async function notify(id:string,p:Application,apiKey:string){
@@ -26,7 +33,7 @@ async function notify(id:string,p:Application,apiKey:string){
       reply_to:p.email,
       subject:`New pilot application: ${p.clinic}`,
       // Plain text only, so applicant input is never rendered as HTML.
-      text:[`Clinic: ${p.clinic}`,`Name: ${p.name}`,`Email: ${p.email}`,`About the practice: ${p.details||"(not provided)"}`,"",`Reference: ${id}`,`Submitted: ${new Date().toISOString()}`].join("\n"),
+      text:[`Clinic: ${p.clinic}`,`Name: ${p.name}`,`Phone: ${p.phone}`,`Email: ${p.email}`,`About the practice: ${p.details||"(not provided)"}`,"",`Reference: ${id}`,`Submitted: ${new Date().toISOString()}`].join("\n"),
     }),
   });
   if(!response.ok)throw new Error(`Resend responded ${response.status}`);
@@ -40,7 +47,7 @@ export async function POST(request:Request){
   try{const raw=await request.text();if(new TextEncoder().encode(raw).length>8192)return Response.json({error:"Your application is too long."},{status:413});body=JSON.parse(raw);}
   catch{return Response.json({error:"We couldn’t read your application. Please try again."},{status:400});}
   const result=application.safeParse(body);
-  if(!result.success)return Response.json({error:"Enter a clinic name and your name (at least 2 characters each), a valid email, and agree to be contacted."},{status:400});
+  if(!result.success)return Response.json({error:"Enter a clinic name and your name (at least 2 characters each), a 10-digit mobile number, a valid email, and agree to be contacted."},{status:400});
   if(result.data.website)return Response.json({error:"We couldn’t accept this application. Please refresh and try again."},{status:400});
 
   const databaseUrl=process.env.DATABASE_URL;
