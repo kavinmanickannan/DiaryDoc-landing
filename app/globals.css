@@ -14,3 +14,90 @@
 
 .chart-canvas{min-width:0}
 
+
+/* ══ Brand mark ═══════════════════════════════════════════════
+   public/logo-mark.png is already trimmed to the mark and square, so the
+   pan-and-zoom that framed the old wide master is no longer needed. */
+.logo-crop{border-radius:0}
+.logo-crop img{position:static;width:100%;height:100%;object-fit:contain;left:auto;top:auto}
+
+/* ══ Typography ═══════════════════════════════════════════════
+   Instrument Sans for UI, Fraunces for headlines. Both load through
+   next/font in app/layout.tsx, which self-hosts them and reserves the
+   metrics, so there is no swap shift on first paint. */
+:root{--font-sans:var(--font-sans-site),system-ui,-apple-system,"Segoe UI",sans-serif;--font-serif:var(--font-display-site),Georgia,"Times New Roman",serif}
+body{font-family:var(--font-sans);font-size:16px;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+h1,h2,.pilot-form h3,.tour-copy h3{font-family:var(--font-serif);font-variation-settings:"SOFT" 30,"WONK" 0}
+h1{font-weight:600;letter-spacing:-.045em}
+/* The accent clause used Georgia italic against a system sans; with a
+   real display face it only needs colour to separate it. */
+h1 span{font-family:inherit;font-style:normal;font-weight:400;font-variation-settings:"SOFT" 60,"WONK" 1;color:#1f7f97;letter-spacing:-.04em}
+h2{font-weight:600;letter-spacing:-.035em}
+.brand{font-family:var(--font-serif);font-variation-settings:"SOFT" 40,"WONK" 0;font-weight:600;letter-spacing:-.045em}
+.brand-period{color:#1f7f97}
+.eyebrow,.mini-label{font-family:var(--font-sans)}
+
+/* ══ Product tour ═════════════════════════════════════════════ */
+.tour-section{background:#fff}
+.tour-list{display:flex;flex-direction:column;gap:82px}
+.tour-section .container{width:min(1240px,calc(100% - 64px))}
+.tour-row{display:grid;grid-template-columns:.72fr 1.28fr;gap:52px;align-items:center}
+/* Reversed rows swap the copy to the right, so the column widths have
+   to swap with them or the screenshot lands in the narrow track. */
+.tour-flip{grid-template-columns:1.28fr .72fr}
+.tour-flip .tour-copy{order:2}
+.tour-copy .eyebrow{justify-content:flex-start;letter-spacing:.11em;font-size:11px;color:#3f7c8e}
+.tour-copy h3{font-size:clamp(1.55rem,2.4vw,2rem);line-height:1.2;letter-spacing:-.035em;font-weight:600;margin:14px 0 14px}
+.tour-copy p:not(.eyebrow){color:#5d7681;font-size:15.5px;line-height:1.8;margin:0;max-width:420px}
+.tour-shot{margin:0;border:1px solid #d7e3e8;border-radius:12px;overflow:hidden;background:#fff;box-shadow:0 22px 60px -32px #0d323f66}
+.shot-chrome{display:flex;align-items:center;gap:7px;padding:11px 14px;background:#f2f6f8;border-bottom:1px solid #e1eaee}
+.shot-chrome span{width:9px;height:9px;border-radius:100%;background:#cfdde3}
+.tour-shot img{display:block;width:100%;height:auto}
+/* The invoice capture is the document edge-to-edge; give it the
+   margin a printed page would have. */
+.tour-shot.shot-pad picture{display:block;padding:18px 20px;background:#fff}
+
+/* ══ Trust band ═══════════════════════════════════════════════ */
+.trust-section{background:#0f3a47;color:#e8f2f5;border-block:1px solid #0b2c37}
+.trust-section h2{color:#fff}
+.trust-heading .eyebrow{color:#7fb4c5;justify-content:flex-start;letter-spacing:.12em;font-size:11px}
+.trust-heading>p{color:#a9c8d2;max-width:375px;font-size:17px;line-height:1.8}
+.trust-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:38px 46px}
+.trust-grid h3{font-size:16.5px;font-weight:600;letter-spacing:-.015em;margin:12px 0 8px;color:#fff}
+.trust-grid p{font-size:14px;line-height:1.8;color:#a4c3ce;margin:0}
+.trust-icon{display:inline-flex;color:#8fd3e6;background:#ffffff14;border:1px solid #ffffff1f;padding:9px;border-radius:9px}
+.trust-foot{margin:46px 0 0;padding-top:22px;border-top:1px solid #23576a;font-size:12px;color:#8fb2be}
+
+/* ══ Sticky mobile CTA ════════════════════════════════════════
+   The header CTA scrolls away on a phone; this keeps one reachable. */
+.sticky-cta{display:none}
+@media(max-width:700px){
+  /* Same teal as .button — the stylesheet redefines the palette further
+     up, so hardcoding the earlier green here would have mismatched. */
+  .sticky-cta{display:flex;position:fixed;inset:auto 16px 16px;z-index:30;align-items:center;justify-content:center;gap:10px;
+    background:#17677a;color:#fff;padding:14px 18px;border-radius:10px;font-size:14px;font-weight:600;
+    box-shadow:0 10px 30px -8px #0b2f3a80}
+  body{padding-bottom:76px}
+}
+@media(prefers-reduced-motion:reduce){.sticky-cta,.button{transition:none}}
+
+/* ══ Responsive ═══════════════════════════════════════════════ */
+@media(max-width:900px){
+  .tour-row{grid-template-columns:1fr;gap:26px}
+  .tour-flip .tour-copy{order:0}
+  .tour-list{gap:58px}
+  .trust-grid{grid-template-columns:1fr 1fr;gap:30px 32px}
+}
+@media(max-width:700px){
+  .tour-copy p:not(.eyebrow){font-size:14.5px;max-width:none}
+  .tour-list{gap:46px}
+  .shot-chrome{padding:9px 12px}
+  .trust-grid{grid-template-columns:1fr;gap:26px}
+  /* The demo's "sample data" chip was meant to drop out here, but
+     `.app-bar>span` outranked the plain `.sample-label` rule, so it
+     stayed and overflowed the bar. Match the same specificity. */
+  .app-bar>.sample-label{display:none}
+  .app-bar{padding:12px 16px}
+  .trust-heading>p{font-size:15px;margin-top:18px}
+  .trust-foot{margin-top:32px}
+}
