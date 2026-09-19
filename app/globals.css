@@ -37,6 +37,14 @@ h2{font-weight:600;letter-spacing:-.035em}
 .brand-period{color:#1f7f97}
 .eyebrow,.mini-label{font-family:var(--font-sans)}
 
+/* ══ Pilot form ═══════════════════════════════════════════════
+   Phone and email share a row so adding a fifth field doesn't push the
+   card taller than the copy beside it. The card is inside a half-width
+   grid column, so it only has room for two inputs on wide viewports. */
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.field-row>label{min-width:0}
+@media(max-width:1000px){.field-row{grid-template-columns:1fr;gap:17px}}
+
 /* ══ Product tour ═════════════════════════════════════════════ */
 .tour-section{background:#fff}
 .tour-list{display:flex;flex-direction:column;gap:82px}
@@ -76,7 +84,9 @@ h2{font-weight:600;letter-spacing:-.035em}
      up, so hardcoding the earlier green here would have mismatched. */
   .sticky-cta{display:flex;position:fixed;inset:auto 16px 16px;z-index:30;align-items:center;justify-content:center;gap:10px;
     background:#17677a;color:#fff;padding:14px 18px;border-radius:10px;font-size:14px;font-weight:600;
-    box-shadow:0 10px 30px -8px #0b2f3a80}
+      box-shadow:0 10px 30px -8px #0b2f3a80;transition:opacity .2s,transform .2s}
+  /* retired once the pilot form is on screen — it has its own button */
+  .sticky-cta.is-hidden{opacity:0;transform:translateY(130%);pointer-events:none}
   body{padding-bottom:76px}
 }
 @media(prefers-reduced-motion:reduce){.sticky-cta,.button{transition:none}}
